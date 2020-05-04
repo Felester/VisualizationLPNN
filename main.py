@@ -1,4 +1,5 @@
 import classNeuralNetwork
+import MainWindow
 
 layer = 0
 NNstruct = [64, 15, 10]
@@ -31,10 +32,10 @@ def test_nn():
     for i in range(len(dataList[3])):
         if np.argmax(prediction[i]) == np.argmax(dataList[3][i]):
             countAnsv=countAnsv+1
-
-
     print(countAnsv * 100/len(dataList[3]))
 
 
 if __name__ == "__main__":
-    test_nn()
+    #test_nn()
+    mainWin = MainWindow.MainWindow(800, 600, "Визуализатор связей нейронных сетей в процессе обучения")
+    mainWin.startForm()
