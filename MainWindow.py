@@ -1,9 +1,11 @@
 class MainWindow():
     from tkinter import Label, Button, Tk, Canvas, Text, WORD, LabelFrame, Entry, END
     from tkinter.ttk import Combobox
+    from tkinter import messagebox as mb
     from tkinter import filedialog as fd
     from os import path
 
+    import dataSettingsNN as ds
     import threading
 
     def __init__(self, width, height, title):
@@ -16,9 +18,11 @@ class MainWindow():
 
 
     def startForm(self):
-        self.paintingCanvas()
-        self.createButton()
+        self.arrange_controls()
+        self.start_value_entry()
+
         self.window.mainloop()
+
 
 
     def change_combo_box(self, event):
@@ -33,10 +37,23 @@ class MainWindow():
 
 
     def save_configuration(self):
+        ansv, log_validation = self.ds.data_validation(self.entry_NNstruct.get(),
+                                       self.entry_NNseed.get(),
+                                       self.entry_zero_connection_seed.get(),
+                                       self.entry_data_set.get())
+
+        if log_validation != "":
+            self.mb.showerror("Ошибка сохранения", log_validation)
+        else:
+            self.mb.showerror("Всё отлично", "Ошибок нет =)")
+
+
+        #self.text.insert(1.0, log_validation)  # Добавление текста
+        #print(ansv)
         print("Сохраняем")
 
 
-    def paintingCanvas(self):
+    def arrange_controls(self):
         f_top = self.LabelFrame(self.window, text="Здесь будет рисоваться график", font=self.signature_font)
         self.c = self.Canvas(f_top, width=600, height=200, bg='white').place(relwidth=1, relheight = 1)
         f_top.place(relwidth=0.98, relheight=0.6, relx=0.01)
@@ -64,8 +81,8 @@ class MainWindow():
         self.Label(f_bot_1, text="Сид рандома для обнуления связей").place(relwidth=0.98, relheight=0.09,
                                                                            relx=0.01, rely=0.51)
 
-        self.entry_zero_connection = self.Entry(f_bot_1, bg="white")
-        self.entry_zero_connection.place(relwidth=0.98, relheight=0.09, relx=0.01, rely=0.61)
+        self.entry_zero_connection_seed = self.Entry(f_bot_1, bg="white")
+        self.entry_zero_connection_seed.place(relwidth=0.98, relheight=0.09, relx=0.01, rely=0.61)
 
         self.Label(f_bot_1, text="Файл с данными для обучения").place(relwidth=0.98, relheight=0.09,
                                                                       relx=0.01, rely=0.70)
@@ -117,8 +134,14 @@ class MainWindow():
 
 
 
+    def start_value_entry(self):
         self.text.insert(1.0, "Программа запущена. \n")    #Добавление текста
         self.text.insert(1.0, "Интерфейс отрисован.\n")  # Добавление текста
+
+        self.entry_NNstruct.insert(0, "15 5")
+        self.entry_NNseed.insert(0, "1")
+        self.entry_zero_connection_seed.insert(0, "1")
+        self.entry_data_set.insert(0, "D:/Study/Python/THI/VisualizationLPNN/Data/data_1.data")
 
 
     def createButton(self):
