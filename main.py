@@ -38,4 +38,4 @@ def test_nn():
 if __name__ == "__main__":
     #test_nn()
     mainWin = MainWindow.MainWindow(800, 600, "Визуализатор связей нейронных сетей в процессе обучения")
-    mainWin.startForm()
+    mainWin.start_form()

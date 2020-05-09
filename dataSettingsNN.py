@@ -1,16 +1,33 @@
 class DataSetting:
-    def __init__(self, NNseed, zero_connection_seed, way_data_set, data_set, NNstruct):
-        self._NNstruct = NNstruct
-        self._NNseed = NNseed
-        self._zero_connection_seed = zero_connection_seed
-        self._way_data_set = way_data_set
-        self._data_set = data_set
+    def __init__(self, data_setting):
+        self._NNstruct = data_setting[4]
+        self._NNseed = data_setting[0]
+        self._zero_connection_seed = data_setting[1]
+        self._way_data_set = data_setting[2]
+        self._data_set = data_setting[3]
+        self._is_run = False
+
+
+    def get_NNstruct(self):
+        return self._NNstruct[1:-1]
+
+
+    def get_NNseed(self):
+        return self._NNseed
+
+
+    def get_zero_connection_seed(self):
+        return self._zero_connection_seed
+
+
+    def get_way_data_set(self):
+        return self._way_data_set
+
+
 
 def data_validation(NNstruct, NNseed, zero_connection_seed, way_data_set):
     data_setting = []
     log_validation = ""
-
-
 
     # Проверяем NNseed, чтобы было число
     try:

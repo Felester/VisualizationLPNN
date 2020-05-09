@@ -15,42 +15,14 @@ class MainWindow():
         self.window.title(title)                                #Подпись
         self.window.geometry(str(width) + 'x' + str(height))    #Размер окна
         self.signature_font = ("Comic Sans MS", 10, "bold")
+        self.settingsNN = []
 
 
-    def startForm(self):
-        self.arrange_controls()
-        self.start_value_entry()
+    def start_form(self):
+        self.arrange_controls()     # Панели, кнопки, поля для ввода
+        self.set_default_settings()    #
 
         self.window.mainloop()
-
-
-
-    def change_combo_box(self, event):
-        print("New Element Selected")
-
-
-    def open_data_file(self):
-        initialdir = self.path.expanduser(u'~/Data'),
-        file_name = self.fd.askopenfilename(initialdir=initialdir)
-        self.entry_data_set.delete(0, self.END)
-        self.entry_data_set.insert(0, file_name)
-
-
-    def save_configuration(self):
-        ansv, log_validation = self.ds.data_validation(self.entry_NNstruct.get(),
-                                       self.entry_NNseed.get(),
-                                       self.entry_zero_connection_seed.get(),
-                                       self.entry_data_set.get())
-
-        if log_validation != "":
-            self.mb.showerror("Ошибка сохранения", log_validation)
-        else:
-            self.mb.showerror("Всё отлично", "Ошибок нет =)")
-
-
-        #self.text.insert(1.0, log_validation)  # Добавление текста
-        #print(ansv)
-        print("Сохраняем")
 
 
     def arrange_controls(self):
@@ -95,20 +67,26 @@ class MainWindow():
         self.Button(f_bot_1, text="Сохранить", command=self.save_configuration).place(relwidth=0.48, relheight=0.09,
                                                                                       relx=0.51, rely=0.90)
         # Конец окна конфигурации НС
-        f_bot_1.place(relwidth=0.38, relheight=0.39, relx=0.01, rely=0.6)
+        f_bot_1.place(relwidth=0.30, relheight=0.39, relx=0.01, rely=0.6)
 
         # Панель управления
         f_bot_2 = self.LabelFrame(self.window, text="Панель управления", font=self.signature_font)
 
         self.Button(f_bot_2, text="Запустить обучение 1-ой НС", state='disabled',
-                    command=self.open_data_file).place(relwidth=0.98, relheight=0.09, relx=0.01, rely=0.01)
+                    command=self.open_data_file).place(relwidth=0.70, relheight=0.09, relx=0.01, rely=0.01)
+
+        self.Button(f_bot_2, text="Стоп", state='disabled',
+                    command=self.open_data_file).place(relwidth=0.27, relheight=0.09, relx=0.72, rely=0.01)
 
         self.label_1st_network_learning_process = self.Label(f_bot_2, text="0 циклов обучения")
         self.label_1st_network_learning_process.place(relwidth=0.98, relheight=0.09,
                                                       relx=0.01, rely=0.11)
 
         self.Button(f_bot_2, text="Запустить обучение 2-ой НС", state='disabled',
-                    command=self.open_data_file).place(relwidth=0.98, relheight=0.09, relx=0.01, rely=0.21)
+                    command=self.open_data_file).place(relwidth=0.70, relheight=0.09, relx=0.01, rely=0.21)
+
+        self.Button(f_bot_2, text="Стоп", state='disabled',
+                    command=self.open_data_file).place(relwidth=0.27, relheight=0.09, relx=0.72, rely=0.21)
 
         self.label_2st_network_learning_process = self.Label(f_bot_2, text="0 циклов обучения")
         self.label_2st_network_learning_process.place(relwidth=0.98, relheight=0.09,
@@ -120,8 +98,8 @@ class MainWindow():
         self.Button(f_bot_2, text="Сохранить изображение", state='disabled',
                     command=self.open_data_file).place(relwidth=0.98, relheight=0.09, relx=0.01, rely=0.51)
 
-        # Конец панели управления
-        f_bot_2.place(relwidth=0.3, relheight=0.39, relx=0.4, rely=0.6)
+        # Конец панели управленияы
+        f_bot_2.place(relwidth=0.38, relheight=0.39, relx=0.32, rely=0.6)
 
         # Лог:
         f_bot_3 = self.LabelFrame(self.window, text="Лог программы:", font=self.signature_font)
@@ -132,18 +110,70 @@ class MainWindow():
         self.text.place(relwidth=0.98, relheight=0.98, relx=0.01, rely=0.01)
         f_bot_3.place(relwidth=0.28, relheight=0.38, relx=0.71, rely=0.6)
 
-
-
-    def start_value_entry(self):
-        self.text.insert(1.0, "Программа запущена. \n")    #Добавление текста
         self.text.insert(1.0, "Интерфейс отрисован.\n")  # Добавление текста
 
-        self.entry_NNstruct.insert(0, "15 5")
-        self.entry_NNseed.insert(0, "1")
-        self.entry_zero_connection_seed.insert(0, "1")
-        self.entry_data_set.insert(0, "D:/Study/Python/THI/VisualizationLPNN/Data/data_1.data")
+    # Тут задаются стартовые настройки сетей
+    def set_default_settings(self):
+        self.add_setting_data("15", "1", "0", "D:/Study/Python/THI/VisualizationLPNN/Data/data_1.data")
+        self.add_setting_data("16", "2", "1", "D:/Study/Python/THI/VisualizationLPNN/Data/data_1.data")
+        self.show_network_settings(self.combo_box.current())
+        self.text.insert(1.0, "Стартовые настройки были записаны \n")    #Добавление текста
 
+    # При смене combo_box-а
+    def change_combo_box(self, event):
+        self.show_network_settings(self.combo_box.current())
 
+    # Выбор файла с данными через проводник.
+    def open_data_file(self):
+        initialdir = self.path.expanduser(u'~/Data'),
+        file_name = self.fd.askopenfilename(initialdir=initialdir)
+        self.entry_data_set.delete(0, self.END)
+        self.entry_data_set.insert(0, file_name)
+
+    # Нужно координально переписывать
+    def save_configuration(self):
+        data_Setting, log_validation = self.ds.data_validation(self.entry_NNstruct.get(),
+                                       self.entry_NNseed.get(),
+                                       self.entry_zero_connection_seed.get(),
+                                       self.entry_data_set.get())
+
+        if log_validation != "":
+            self.mb.showerror("Ошибка сохранения", log_validation)
+        else:
+            answer = self.mb.askyesno(title="Новые настройки", message="Применение данных настроек обнулит прогресс "
+                                                                       "обучения НС. Применить новые настройки?")
+            if answer:
+                self.settingsNN[self.combo_box.current()] = self.ds.DataSetting(data_Setting)
+                self.text.insert(1.0, "Новые параметры применены к НС №" + str(self.combo_box.current()+1) + " \n")  #
+
+    # Эта функция сохраняет стартовые настройки.
+    # В последствии они будут меняться на новые через поля ввода другой функцией
+    def add_setting_data(self, NNstruct, NNseed, zero_connection_seed, way_data_set):
+        data_Setting, log_validation = self.ds.data_validation(NNstruct,
+                                       NNseed,
+                                       zero_connection_seed,
+                                       way_data_set)
+
+        if log_validation != "":
+            self.mb.showerror("Ошибка сохранения", log_validation)
+        else:
+            self.settingsNN.append(self.ds.DataSetting(data_Setting))
+            self.text.insert(1.0, "Создана НС №" + str(len(self.settingsNN)) + " \n")  #
+
+    def show_network_settings(self, index_combo_box):
+        self.delete_show_settings()
+        self.entry_NNstruct.insert(0, self.settingsNN[index_combo_box].get_NNstruct())
+        self.entry_NNseed.insert(0, self.settingsNN[index_combo_box].get_NNseed())
+        self.entry_zero_connection_seed.insert(0, self.settingsNN[index_combo_box].get_zero_connection_seed())
+        self.entry_data_set.insert(0, self.settingsNN[index_combo_box].get_way_data_set())
+
+    def delete_show_settings(self):
+        self.entry_NNstruct.delete(0, self.END)
+        self.entry_NNseed.delete(0, self.END)
+        self.entry_zero_connection_seed.delete(0, self.END)
+        self.entry_data_set.delete(0, self.END)
+
+    # Буфер с кодом. Нужен будет в будущем
     def createButton(self):
         #self.text = self.Text(width=120, height=10, bg="white", fg='black', wrap=self.WORD)
         #self.text.place(x=10, y=440)
