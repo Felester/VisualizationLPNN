@@ -24,7 +24,7 @@ class MainWindow():
 
         self.window.mainloop()
 
-
+    # Все поля, кнопки, метки, разметка и т.д.
     def arrange_controls(self):
         f_top = self.LabelFrame(self.window, text="Здесь будет рисоваться график", font=self.signature_font)
         self.c = self.Canvas(f_top, width=600, height=200, bg='white').place(relwidth=1, relheight = 1)
@@ -72,21 +72,28 @@ class MainWindow():
         # Панель управления
         f_bot_2 = self.LabelFrame(self.window, text="Панель управления", font=self.signature_font)
 
-        self.Button(f_bot_2, text="Запустить обучение 1-ой НС", state='disabled',
-                    command=self.open_data_file).place(relwidth=0.70, relheight=0.09, relx=0.01, rely=0.01)
+        self.button_run_trainingNN_1 = self.Button(f_bot_2, text="Запустить обучение 1-ой НС", state='disabled',
+             command=lambda: self.threading.Thread(target=lambda: self.run_training(0)).start())
 
-        self.Button(f_bot_2, text="Стоп", state='disabled',
-                    command=self.open_data_file).place(relwidth=0.27, relheight=0.09, relx=0.72, rely=0.01)
+        self.button_run_trainingNN_1.place(relwidth=0.70, relheight=0.09, relx=0.01, rely=0.01)
+
+        self.button_stop_trainingNN_1 = self.Button(f_bot_2, text="Стоп", state='disabled',
+                    command=lambda: self.stop_training(0))
+        self.button_stop_trainingNN_1.place(relwidth=0.27, relheight=0.09, relx=0.72, rely=0.01)
+
 
         self.label_1st_network_learning_process = self.Label(f_bot_2, text="0 циклов обучения")
         self.label_1st_network_learning_process.place(relwidth=0.98, relheight=0.09,
                                                       relx=0.01, rely=0.11)
 
-        self.Button(f_bot_2, text="Запустить обучение 2-ой НС", state='disabled',
-                    command=self.open_data_file).place(relwidth=0.70, relheight=0.09, relx=0.01, rely=0.21)
+        self.button_run_trainingNN_2 = self.Button(f_bot_2, text="Запустить обучение 2-ой НС", state='disabled',
+                    command=lambda: self.threading.Thread(target=lambda: self.run_training(1)).start())
+        self.button_run_trainingNN_2.place(relwidth=0.70, relheight=0.09, relx=0.01, rely=0.21)
 
-        self.Button(f_bot_2, text="Стоп", state='disabled',
-                    command=self.open_data_file).place(relwidth=0.27, relheight=0.09, relx=0.72, rely=0.21)
+        self.button_stop_trainingNN_2 = self.Button(f_bot_2, text="Стоп", state='disabled',
+                    command=lambda: self.stop_training(1))
+        self.button_stop_trainingNN_2.place(relwidth=0.27, relheight=0.09, relx=0.72, rely=0.21)
+
 
         self.label_2st_network_learning_process = self.Label(f_bot_2, text="0 циклов обучения")
         self.label_2st_network_learning_process.place(relwidth=0.98, relheight=0.09,
@@ -112,6 +119,42 @@ class MainWindow():
 
         self.text.insert(1.0, "Интерфейс отрисован.\n")  # Добавление текста
 
+    # Данный метод открывается в отдельном потоке для обучения НС.
+    def run_training(self, indexNN):
+        import time
+        self.text.insert(1.0, "Начали обучение НС №" + str(indexNN+1) + " \n")  # Добавление текста
+        self.settingsNN[indexNN].run_training()
+
+        num = 0
+        if indexNN == 0:
+            self.button_stop_trainingNN_1['state'] = 'normal'
+            self.button_run_trainingNN_1['state'] = 'disabled'
+
+            while self.settingsNN[indexNN].get_is_run():
+                self.label_1st_network_learning_process['text'] = str(num) + " цикл обучения"
+                num = num + 1
+                time.sleep(1)
+
+        elif indexNN == 1:
+            self.button_stop_trainingNN_2['state'] = 'normal'
+            self.button_run_trainingNN_2['state'] = 'disabled'
+
+            while self.settingsNN[indexNN].get_is_run():
+                self.label_2st_network_learning_process['text'] = str(num) + " цикл обучения"
+                num = num + 1
+                time.sleep(1)
+
+    def stop_training(self, indexNN):
+        self.settingsNN[indexNN].stop_training()
+        if indexNN == 0:
+            self.button_run_trainingNN_1['state'] = 'normal'
+            self.button_stop_trainingNN_1['state'] = 'disabled'
+        elif indexNN == 1:
+            self.button_run_trainingNN_2['state'] = 'normal'
+            self.button_stop_trainingNN_2['state'] = 'disabled'
+        self.text.insert(1.0, "Закончили обучение НС № " + str(indexNN+1) + " \n")  # Добавление текста
+
+
     # Тут задаются стартовые настройки сетей
     def set_default_settings(self):
         self.add_setting_data("15", "1", "0", "D:/Study/Python/THI/VisualizationLPNN/Data/data_1.data")
@@ -130,7 +173,7 @@ class MainWindow():
         self.entry_data_set.delete(0, self.END)
         self.entry_data_set.insert(0, file_name)
 
-    # Нужно координально переписывать
+    # Нужно смена параметров
     def save_configuration(self):
         data_Setting, log_validation = self.ds.data_validation(self.entry_NNstruct.get(),
                                        self.entry_NNseed.get(),
@@ -158,7 +201,10 @@ class MainWindow():
             self.mb.showerror("Ошибка сохранения", log_validation)
         else:
             self.settingsNN.append(self.ds.DataSetting(data_Setting))
+
             self.text.insert(1.0, "Создана НС №" + str(len(self.settingsNN)) + " \n")  #
+            self.button_run_trainingNN_1['state'] = 'normal'
+            self.button_run_trainingNN_2['state'] = 'normal'
 
     def show_network_settings(self, index_combo_box):
         self.delete_show_settings()
@@ -172,21 +218,3 @@ class MainWindow():
         self.entry_NNseed.delete(0, self.END)
         self.entry_zero_connection_seed.delete(0, self.END)
         self.entry_data_set.delete(0, self.END)
-
-    # Буфер с кодом. Нужен будет в будущем
-    def createButton(self):
-        #self.text = self.Text(width=120, height=10, bg="white", fg='black', wrap=self.WORD)
-        #self.text.place(x=10, y=440)
-
-        #self.text.insert(1.0, "Процесс работы программы:\n")
-
-        self.is_run = False
-
-        #b1 = self.Button(text="Обучить НС", command=lambda: self.is_run or
-                                             #self.threading.Thread(target=self.start_nn_training).start()).place(x=420, y=50)
-
-        #b2 = self.Button(text="stop", command=self.stop_nn_training).place(x=420, y=80)
-
-        #b3 = self.Button(text="ПРоверим на реальных данных!", command=self.load_picture_in_nn).place(x=420, y=110)
-
-

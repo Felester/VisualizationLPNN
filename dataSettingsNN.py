@@ -7,22 +7,27 @@ class DataSetting:
         self._data_set = data_setting[3]
         self._is_run = False
 
+    def run_training(self):
+        self._is_run = True
+        print("Запустили")
+
+    def stop_training(self):
+        self._is_run = False
+
+    def get_is_run(self):
+        return self._is_run
 
     def get_NNstruct(self):
         return self._NNstruct[1:-1]
 
-
     def get_NNseed(self):
         return self._NNseed
-
 
     def get_zero_connection_seed(self):
         return self._zero_connection_seed
 
-
     def get_way_data_set(self):
         return self._way_data_set
-
 
 
 def data_validation(NNstruct, NNseed, zero_connection_seed, way_data_set):
@@ -32,26 +37,22 @@ def data_validation(NNstruct, NNseed, zero_connection_seed, way_data_set):
     # Проверяем NNseed, чтобы было число
     try:
         data_setting.append(int(NNseed))
-        #log_validation += "NNseed в порядке \n"
     except:
         log_validation += "Сид рандома НС не опознан. Необходимо использовать только целые числа \n"
 
     # Проверяем zero_connection_seed, чтобы было число
     try:
         data_setting.append(int(zero_connection_seed))
-        #log_validation += "zero_connection_seed в порядке \n"
     except:
         log_validation += "Сид рандома для обнуления связей не опознан. Необходимо использовать только целые числа \n"
 
     # Проверяем путь. Есть ли такой файл? Считываем его. Если всё в порядке, сразу проверяем и записываем структуру
     try:
         data_set = _get_data_sets(way_data_set)
-        #log_validation += "Путь к данным в порядке, данные выгружены \n"
         data_setting.append(way_data_set)
 
         if len(data_set) == 4:
             data_setting.append(data_set)
-            #print("Структура данных в порядке. Сохранили.")
 
             NNstruct, log_validation_NNstruct = _NNstruct_validation(NNstruct, data_set)
             if log_validation_NNstruct == "":
@@ -64,8 +65,6 @@ def data_validation(NNstruct, NNseed, zero_connection_seed, way_data_set):
             log_validation += "Структура не записана, так как файл с данными повреждён"
     except:
         log_validation += "Файл c данными не найден. Проверьте наличие файла по указанному пути \n"
-
-
 
     return data_setting, log_validation
 
