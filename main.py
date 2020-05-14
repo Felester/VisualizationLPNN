@@ -26,7 +26,7 @@ def test_nn():
             zeroСonnection.append([layer, j // NNstruct[layer + 1], j % NNstruct[layer + 1]])
 
     MyNN = classNeuralNetwork.NeuralNetwork(1, NNstruct, zeroСonnection)
-    MyNN.train(dataList[0], dataList[1], zeroСonnection, 25000, 0.1, 0.001)
+    MyNN.train(dataList[0], dataList[1], zeroСonnection, 1000, 0.1, 0.001)
     prediction = MyNN.think(dataList[2])
     countAnsv = 0;
     for i in range(len(dataList[3])):

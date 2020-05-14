@@ -4,6 +4,7 @@ class MainWindow():
     from tkinter import messagebox as mb
     from tkinter import filedialog as fd
     from os import path
+    import time
 
     import dataSettingsNN as ds
     import threading
@@ -130,8 +131,6 @@ class MainWindow():
 
     # Данный метод открывается в отдельном потоке для обучения НС.
     def run_training(self, indexNN):
-        import time
-
         deley = 0
         training_cycles = 20000
         try:
@@ -145,29 +144,32 @@ class MainWindow():
         except:
             self.mb.showerror("Ошибка данных", "Кол-во циклов обучения введено не корректно, "
                                                "будет использовано значение по умолчанию: " + str(training_cycles))
-
+        end_training_cycles = training_cycles + self.settingsNN[indexNN].get_training_cycle()
         self.entry_NNstruct.get()
 
         self.text.insert(1.0, "Начали обучение НС №" + str(indexNN+1) + " \n")  # Добавление текста
         self.settingsNN[indexNN].run_training()
 
-        num = 0
         self.buttons_stop_trainingNN[indexNN]['state'] = 'normal'
         self.buttons_run_trainingNN[indexNN]['state'] = 'disabled'
 
-        while self.settingsNN[indexNN].get_is_run() and training_cycles >= num:
-            self.arr_info_label[indexNN]['text'] = str(num) + " цикл обучения"
-            num = num + 1
-            time.sleep(deley)
+        while self.settingsNN[indexNN].get_is_run() and end_training_cycles > self.settingsNN[indexNN].get_training_cycle():
+            self.settingsNN[indexNN].training_cycle()
+            self.arr_info_label[indexNN]['text'] = str(self.settingsNN[indexNN].get_training_cycle()) + " цикл обучения"
+            self.time.sleep(deley)
 
         self.stop_training(indexNN)
 
     def stop_training(self, indexNN):
         self.settingsNN[indexNN].stop_training()
 
+
         self.buttons_run_trainingNN[indexNN]['state'] = 'normal'
         self.buttons_stop_trainingNN[indexNN]['state'] = 'disabled'
 
+
+        self.text.insert(1.0, "Точность НС № " + str(indexNN + 1) +" = " +
+                         self.settingsNN[indexNN].get_accuracy_NN() + " \n")  # Добавление текста
         self.text.insert(1.0, "Закончили обучение НС № " + str(indexNN+1) + " \n")  # Добавление текста
 
     # Тут задаются стартовые настройки сетей

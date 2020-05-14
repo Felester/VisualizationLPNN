@@ -1,18 +1,57 @@
 class DataSetting:
+    import classNeuralNetwork
+    import numpy as np
+
     def __init__(self, data_setting):
         self._NNstruct = data_setting[4]
         self._NNseed = data_setting[0]
         self._zero_connection_seed = data_setting[1]
         self._way_data_set = data_setting[2]
         self._data_set = data_setting[3]
+        self._zeroСonnection = self._create_zeroСonnection()
+        self._object_NN = self.classNeuralNetwork.NeuralNetwork(self._NNseed, self._NNstruct, self._zeroСonnection)
+
+
         self._is_run = False
+        self._completed_training_cycles = 0
+
+
+    def _create_zeroСonnection(self):
+        import random
+        random.seed(self._zero_connection_seed)
+
+        layer = 0
+        lenKey = self._NNstruct[layer] * self._NNstruct[layer + 1]
+
+        connection = [random.randint(0, 1) for i in range(lenKey)]
+        zeroСonnection = []
+        for j in range(len(connection)):
+            if connection[j] == 0:
+                zeroСonnection.append([layer, j // self._NNstruct[layer + 1], j % self._NNstruct[layer + 1]])
+        return zeroСonnection
+
+
+    def get_accuracy_NN(self):
+        prediction = self._object_NN.think(self._data_set[2])
+        countAnsv = 0
+        for i in range(len(self._data_set[3])):
+            if self.np.argmax(prediction[i]) == self.np.argmax(self._data_set[3][i]):
+                countAnsv = countAnsv + 1
+        print(countAnsv * 100 / len(self._data_set[3]))
+        return str(countAnsv * 100 / len(self._data_set[3]))
+
+    def training_cycle(self):
+        self._object_NN.train(self._data_set[0], self._data_set[1], self._zeroСonnection, 1, 0.1)
+        self._completed_training_cycles = self._completed_training_cycles + 1
 
     def run_training(self):
         self._is_run = True
-        print("Запустили")
 
     def stop_training(self):
         self._is_run = False
+
+    def get_training_cycle(self):
+        return self._completed_training_cycles
 
     def get_is_run(self):
         return self._is_run
