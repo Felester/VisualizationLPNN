@@ -26,6 +26,10 @@ class MainWindow():
 
     # Все поля, кнопки, метки, разметка и т.д.
     def arrange_controls(self):
+        self.arr_info_label = []
+        self.buttons_run_trainingNN = []
+        self.buttons_stop_trainingNN = []
+
         f_top = self.LabelFrame(self.window, text="Здесь будет рисоваться график", font=self.signature_font)
         self.c = self.Canvas(f_top, width=600, height=200, bg='white').place(relwidth=1, relheight = 1)
         f_top.place(relwidth=0.98, relheight=0.6, relx=0.01)
@@ -72,38 +76,43 @@ class MainWindow():
         # Панель управления
         f_bot_2 = self.LabelFrame(self.window, text="Панель управления", font=self.signature_font)
 
-        self.button_run_trainingNN_1 = self.Button(f_bot_2, text="Запустить обучение 1-ой НС", state='disabled',
-             command=lambda: self.threading.Thread(target=lambda: self.run_training(0)).start())
+        self.buttons_run_trainingNN.append(self.Button(f_bot_2, text="Запустить обучение 1-ой НС", state='disabled',
+             command=lambda: self.threading.Thread(target=lambda: self.run_training(0)).start()))
+        self.buttons_run_trainingNN[-1].place(relwidth=0.70, relheight=0.09, relx=0.01, rely=0.01)
 
-        self.button_run_trainingNN_1.place(relwidth=0.70, relheight=0.09, relx=0.01, rely=0.01)
+        self.buttons_stop_trainingNN.append(self.Button(f_bot_2, text="Стоп", state='disabled',
+                    command=lambda: self.stop_training(0)))
+        self.buttons_stop_trainingNN[-1].place(relwidth=0.27, relheight=0.09, relx=0.72, rely=0.01)
 
-        self.button_stop_trainingNN_1 = self.Button(f_bot_2, text="Стоп", state='disabled',
-                    command=lambda: self.stop_training(0))
-        self.button_stop_trainingNN_1.place(relwidth=0.27, relheight=0.09, relx=0.72, rely=0.01)
+        self.arr_info_label.append(self.Label(f_bot_2, text="0 циклов обучения"))
+        self.arr_info_label[-1].place(relwidth=0.98, relheight=0.09, relx=0.01, rely=0.11)
 
+        self.buttons_run_trainingNN.append(self.Button(f_bot_2, text="Запустить обучение 2-ой НС", state='disabled',
+                    command=lambda: self.threading.Thread(target=lambda: self.run_training(1)).start()))
+        self.buttons_run_trainingNN[-1].place(relwidth=0.70, relheight=0.09, relx=0.01, rely=0.21)
 
-        self.label_1st_network_learning_process = self.Label(f_bot_2, text="0 циклов обучения")
-        self.label_1st_network_learning_process.place(relwidth=0.98, relheight=0.09,
-                                                      relx=0.01, rely=0.11)
+        self.buttons_stop_trainingNN.append(self.Button(f_bot_2, text="Стоп", state='disabled',
+                    command=lambda: self.stop_training(1)))
+        self.buttons_stop_trainingNN[-1].place(relwidth=0.27, relheight=0.09, relx=0.72, rely=0.21)
 
-        self.button_run_trainingNN_2 = self.Button(f_bot_2, text="Запустить обучение 2-ой НС", state='disabled',
-                    command=lambda: self.threading.Thread(target=lambda: self.run_training(1)).start())
-        self.button_run_trainingNN_2.place(relwidth=0.70, relheight=0.09, relx=0.01, rely=0.21)
+        self.arr_info_label.append(self.Label(f_bot_2, text="0 циклов обучения"))
+        self.arr_info_label[-1].place(relwidth=0.98, relheight=0.09, relx=0.01, rely=0.31)
 
-        self.button_stop_trainingNN_2 = self.Button(f_bot_2, text="Стоп", state='disabled',
-                    command=lambda: self.stop_training(1))
-        self.button_stop_trainingNN_2.place(relwidth=0.27, relheight=0.09, relx=0.72, rely=0.21)
+        self.Label(f_bot_2, text="Задержка, секунд:").place(relwidth=0.48, relheight=0.09, relx=0.01, rely=0.41)
+        self.Label(f_bot_2, text="Циклов обучения:").place(relwidth=0.48, relheight=0.09, relx=0.51, rely=0.41)
 
+        self.entry_learning_delay = self.Entry(f_bot_2, bg="white")
+        self.entry_learning_delay.place(relwidth=0.48, relheight=0.09, relx=0.01, rely=0.51)
 
-        self.label_2st_network_learning_process = self.Label(f_bot_2, text="0 циклов обучения")
-        self.label_2st_network_learning_process.place(relwidth=0.98, relheight=0.09,
-                                                      relx=0.01, rely=0.31)
+        self.entry_training_cycles = self.Entry(f_bot_2, bg="white")
+        self.entry_training_cycles.place(relwidth=0.48, relheight=0.09, relx=0.51, rely=0.51)
+
 
         self.Button(f_bot_2, text="Проанализировать результаты", state='disabled',
-                    command=self.open_data_file).place(relwidth=0.98, relheight=0.09, relx=0.01, rely=0.41)
+                    command=self.open_data_file).place(relwidth=0.98, relheight=0.09, relx=0.01, rely=0.61)
 
         self.Button(f_bot_2, text="Сохранить изображение", state='disabled',
-                    command=self.open_data_file).place(relwidth=0.98, relheight=0.09, relx=0.01, rely=0.51)
+                    command=self.open_data_file).place(relwidth=0.98, relheight=0.09, relx=0.01, rely=0.71)
 
         # Конец панели управленияы
         f_bot_2.place(relwidth=0.38, relheight=0.39, relx=0.32, rely=0.6)
@@ -122,38 +131,44 @@ class MainWindow():
     # Данный метод открывается в отдельном потоке для обучения НС.
     def run_training(self, indexNN):
         import time
+
+        deley = 0
+        training_cycles = 20000
+        try:
+            deley = float(self.entry_learning_delay.get().replace(',', '.'))
+        except:
+            self.mb.showerror("Ошибка данных", "Задержка обучения введена не корректно, "
+                                               "будет использовано значение по умолчанию: 0")
+
+        try:
+            training_cycles = int(self.entry_training_cycles.get())
+        except:
+            self.mb.showerror("Ошибка данных", "Кол-во циклов обучения введено не корректно, "
+                                               "будет использовано значение по умолчанию: " + str(training_cycles))
+
+        self.entry_NNstruct.get()
+
         self.text.insert(1.0, "Начали обучение НС №" + str(indexNN+1) + " \n")  # Добавление текста
         self.settingsNN[indexNN].run_training()
 
         num = 0
-        if indexNN == 0:
-            self.button_stop_trainingNN_1['state'] = 'normal'
-            self.button_run_trainingNN_1['state'] = 'disabled'
+        self.buttons_stop_trainingNN[indexNN]['state'] = 'normal'
+        self.buttons_run_trainingNN[indexNN]['state'] = 'disabled'
 
-            while self.settingsNN[indexNN].get_is_run():
-                self.label_1st_network_learning_process['text'] = str(num) + " цикл обучения"
-                num = num + 1
-                time.sleep(1)
+        while self.settingsNN[indexNN].get_is_run() and training_cycles >= num:
+            self.arr_info_label[indexNN]['text'] = str(num) + " цикл обучения"
+            num = num + 1
+            time.sleep(deley)
 
-        elif indexNN == 1:
-            self.button_stop_trainingNN_2['state'] = 'normal'
-            self.button_run_trainingNN_2['state'] = 'disabled'
-
-            while self.settingsNN[indexNN].get_is_run():
-                self.label_2st_network_learning_process['text'] = str(num) + " цикл обучения"
-                num = num + 1
-                time.sleep(1)
+        self.stop_training(indexNN)
 
     def stop_training(self, indexNN):
         self.settingsNN[indexNN].stop_training()
-        if indexNN == 0:
-            self.button_run_trainingNN_1['state'] = 'normal'
-            self.button_stop_trainingNN_1['state'] = 'disabled'
-        elif indexNN == 1:
-            self.button_run_trainingNN_2['state'] = 'normal'
-            self.button_stop_trainingNN_2['state'] = 'disabled'
-        self.text.insert(1.0, "Закончили обучение НС № " + str(indexNN+1) + " \n")  # Добавление текста
 
+        self.buttons_run_trainingNN[indexNN]['state'] = 'normal'
+        self.buttons_stop_trainingNN[indexNN]['state'] = 'disabled'
+
+        self.text.insert(1.0, "Закончили обучение НС № " + str(indexNN+1) + " \n")  # Добавление текста
 
     # Тут задаются стартовые настройки сетей
     def set_default_settings(self):
@@ -203,8 +218,8 @@ class MainWindow():
             self.settingsNN.append(self.ds.DataSetting(data_Setting))
 
             self.text.insert(1.0, "Создана НС №" + str(len(self.settingsNN)) + " \n")  #
-            self.button_run_trainingNN_1['state'] = 'normal'
-            self.button_run_trainingNN_2['state'] = 'normal'
+            self.buttons_run_trainingNN[0]['state'] = 'normal'
+            self.buttons_run_trainingNN[1]['state'] = 'normal'
 
     def show_network_settings(self, index_combo_box):
         self.delete_show_settings()
