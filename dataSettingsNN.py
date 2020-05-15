@@ -3,6 +3,7 @@ class DataSetting:
     import numpy as np
 
     def __init__(self, data_setting):
+        self._layer = 0
         self._NNstruct = data_setting[4]
         self._NNseed = data_setting[0]
         self._zero_connection_seed = data_setting[1]
@@ -11,25 +12,29 @@ class DataSetting:
         self._zeroСonnection = self._create_zeroСonnection()
         self._object_NN = self.classNeuralNetwork.NeuralNetwork(self._NNseed, self._NNstruct, self._zeroСonnection)
 
-
         self._is_run = False
         self._completed_training_cycles = 0
 
 
     def _create_zeroСonnection(self):
-        import random
-        random.seed(self._zero_connection_seed)
-
-        layer = 0
-        lenKey = self._NNstruct[layer] * self._NNstruct[layer + 1]
-
-        connection = [random.randint(0, 1) for i in range(lenKey)]
         zeroСonnection = []
-        for j in range(len(connection)):
-            if connection[j] == 0:
-                zeroСonnection.append([layer, j // self._NNstruct[layer + 1], j % self._NNstruct[layer + 1]])
+        if self._zero_connection_seed != 0:
+            import random
+            random.seed(self._zero_connection_seed)
+            lenKey = self._NNstruct[self._layer] * self._NNstruct[self._layer + 1]
+
+            connection = [random.randint(0, 1) for i in range(lenKey)]
+
+            for j in range(len(connection)):
+                if connection[j] == 0:
+                    zeroСonnection.append([self._layer, j // self._NNstruct[self._layer + 1],
+                                           j % self._NNstruct[self._layer + 1]])
         return zeroСonnection
 
+    # Массив синапсов заданного слоя в удобном формате
+    def get_synapse_values(self):
+        array_synaptic_scales = self._object_NN.get_array_synaptic_scales()
+        return array_synaptic_scales
 
     def get_accuracy_NN(self):
         prediction = self._object_NN.think(self._data_set[2])
@@ -68,7 +73,7 @@ class DataSetting:
     def get_way_data_set(self):
         return self._way_data_set
 
-
+# Проверка данных, введённых пользователем
 def data_validation(NNstruct, NNseed, zero_connection_seed, way_data_set):
     data_setting = []
     log_validation = ""
@@ -115,7 +120,6 @@ def _NNstruct_validation(NNstruct, data_set):
 
         NNstruct.insert(0, len(data_set[0][0]))
         NNstruct.append(len(data_set[1][0]))
-        #log_validation += "Структура записана корректно \n"
     except:
         log_validation += "Структура НС заполнена некорректно \n"
     return NNstruct, log_validation

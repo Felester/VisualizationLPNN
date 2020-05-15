@@ -1,12 +1,16 @@
-class MainWindow():
-    from tkinter import Label, Button, Tk, Canvas, Text, WORD, LabelFrame, Entry, END
+class MainWindow:
+    from tkinter import Label, Button, Tk, Canvas, Text, WORD, LabelFrame, Entry, END, \
+        NW, Scrollbar, HORIZONTAL, BOTTOM, X, LEFT, BOTH
     from tkinter.ttk import Combobox
     from tkinter import messagebox as mb
     from tkinter import filedialog as fd
+
     from os import path
     import time
 
     import dataSettingsNN as ds
+    import information_visualizer as iv
+
     import threading
 
     def __init__(self, width, height, title):
@@ -17,13 +21,19 @@ class MainWindow():
         self.window.geometry(str(width) + 'x' + str(height))    #Размер окна
         self.signature_font = ("Comic Sans MS", 10, "bold")
         self.settingsNN = []
-
+        self.analyzer = self.iv.InformationAnalyzer()
 
     def start_form(self):
         self.arrange_controls()     # Панели, кнопки, поля для ввода
         self.set_default_settings()    #
-
+        self.test_canvas()
         self.window.mainloop()
+
+    def test_canvas(self):
+        image = self.analyzer.get_rendered_information(400, 800)
+
+        self.canvas.create_image(25, 25, anchor=self.NW, image=image)
+        self.canvas.image = image
 
     # Все поля, кнопки, метки, разметка и т.д.
     def arrange_controls(self):
@@ -32,7 +42,14 @@ class MainWindow():
         self.buttons_stop_trainingNN = []
 
         f_top = self.LabelFrame(self.window, text="Здесь будет рисоваться график", font=self.signature_font)
-        self.c = self.Canvas(f_top, width=600, height=200, bg='white').place(relwidth=1, relheight = 1)
+        self.canvas = self.Canvas(f_top, width=600, height=200, bg='white', scrollregion=(0, 0, 1500, 0))
+        self.canvas.place(relwidth=1, relheight=1)
+        hbar = self.Scrollbar(f_top, orient=self.HORIZONTAL)
+        hbar.pack(side=self.BOTTOM, fill=self.X)
+        hbar.config(command=self.canvas.xview)
+        self.canvas.config(width=300, height=300)
+        self.canvas.config(xscrollcommand=hbar.set)
+        self.canvas.pack(side=self.LEFT, expand=True, fill=self.BOTH)
         f_top.place(relwidth=0.98, relheight=0.6, relx=0.01)
 
         # Панель конфигураций НС
@@ -163,10 +180,8 @@ class MainWindow():
     def stop_training(self, indexNN):
         self.settingsNN[indexNN].stop_training()
 
-
         self.buttons_run_trainingNN[indexNN]['state'] = 'normal'
         self.buttons_stop_trainingNN[indexNN]['state'] = 'disabled'
-
 
         self.text.insert(1.0, "Точность НС № " + str(indexNN + 1) +" = " +
                          self.settingsNN[indexNN].get_accuracy_NN() + " \n")  # Добавление текста
@@ -176,6 +191,9 @@ class MainWindow():
     def set_default_settings(self):
         self.add_setting_data("15", "1", "0", "D:/Study/Python/THI/VisualizationLPNN/Data/data_1.data")
         self.add_setting_data("16", "2", "1", "D:/Study/Python/THI/VisualizationLPNN/Data/data_1.data")
+
+        self.analyzer.update_synapses(self.settingsNN[0].get_synapse_values(), 0)
+
         self.show_network_settings(self.combo_box.current())
         self.text.insert(1.0, "Стартовые настройки были записаны \n")    #Добавление текста
 
