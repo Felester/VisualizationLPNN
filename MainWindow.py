@@ -26,13 +26,18 @@ class MainWindow:
     def start_form(self):
         self.arrange_controls()     # Панели, кнопки, поля для ввода
         self.set_default_settings()    #
-        self.test_canvas()
+        self.redraw_canvas()
         self.window.mainloop()
 
-    def test_canvas(self):
-        image = self.analyzer.get_rendered_information(400, 800)
+    def redraw_canvas(self):
+        canv_height = self.canvas.winfo_height()
+        self.analyzer.set_img_height(canv_height)
 
-        self.canvas.create_image(25, 25, anchor=self.NW, image=image)
+        image = self.analyzer.get_rendered_information()
+
+        self.canvas.create_image(5, 5, anchor=self.NW, image=image)
+
+        self.canvas['scrollregion'] = (0, 0, self.analyzer.get_scrollregion_width(), 0)
         self.canvas.image = image
 
     # Все поля, кнопки, метки, разметка и т.д.
@@ -41,16 +46,16 @@ class MainWindow:
         self.buttons_run_trainingNN = []
         self.buttons_stop_trainingNN = []
 
-        f_top = self.LabelFrame(self.window, text="Здесь будет рисоваться график", font=self.signature_font)
-        self.canvas = self.Canvas(f_top, width=600, height=200, bg='white', scrollregion=(0, 0, 1500, 0))
+        self.f_top = self.LabelFrame(self.window, text="Здесь будет рисоваться график", font=self.signature_font)
+        self.canvas = self.Canvas(self.f_top, width=600, height=200, bg='white', scrollregion=(0, 0, 1500, 0))
         self.canvas.place(relwidth=1, relheight=1)
-        hbar = self.Scrollbar(f_top, orient=self.HORIZONTAL)
+        hbar = self.Scrollbar(self.f_top, orient=self.HORIZONTAL)
         hbar.pack(side=self.BOTTOM, fill=self.X)
         hbar.config(command=self.canvas.xview)
         self.canvas.config(width=300, height=300)
         self.canvas.config(xscrollcommand=hbar.set)
         self.canvas.pack(side=self.LEFT, expand=True, fill=self.BOTH)
-        f_top.place(relwidth=0.98, relheight=0.6, relx=0.01)
+        self.f_top.place(relwidth=0.98, relheight=0.6, relx=0.01)
 
         # Панель конфигураций НС
         f_bot_1 = self.LabelFrame(self.window, text="Конфигурация НС", font=self.signature_font)
@@ -173,6 +178,10 @@ class MainWindow:
         while self.settingsNN[indexNN].get_is_run() and end_training_cycles > self.settingsNN[indexNN].get_training_cycle():
             self.settingsNN[indexNN].training_cycle()
             self.arr_info_label[indexNN]['text'] = str(self.settingsNN[indexNN].get_training_cycle()) + " цикл обучения"
+
+            self.analyzer.update_synapses(self.settingsNN[indexNN].get_synapse_values(), indexNN)
+            self.redraw_canvas()
+
             self.time.sleep(deley)
 
         self.stop_training(indexNN)
@@ -189,7 +198,7 @@ class MainWindow:
 
     # Тут задаются стартовые настройки сетей
     def set_default_settings(self):
-        self.add_setting_data("15", "1", "0", "D:/Study/Python/THI/VisualizationLPNN/Data/data_1.data")
+        self.add_setting_data("10", "1", "0", "D:/Study/Python/THI/VisualizationLPNN/Data/data_1.data")
         self.add_setting_data("16", "2", "1", "D:/Study/Python/THI/VisualizationLPNN/Data/data_1.data")
 
         self.analyzer.update_synapses(self.settingsNN[0].get_synapse_values(), 0)

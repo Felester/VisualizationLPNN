@@ -34,7 +34,7 @@ class DataSetting:
     # Массив синапсов заданного слоя в удобном формате
     def get_synapse_values(self):
         array_synaptic_scales = self._object_NN.get_array_synaptic_scales()
-        return array_synaptic_scales
+        return array_synaptic_scales[self._layer]
 
     def get_accuracy_NN(self):
         prediction = self._object_NN.think(self._data_set[2])
@@ -123,7 +123,6 @@ def _NNstruct_validation(NNstruct, data_set):
     except:
         log_validation += "Структура НС заполнена некорректно \n"
     return NNstruct, log_validation
-
 
 def _get_data_sets(way):
     import pickle
