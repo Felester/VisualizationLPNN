@@ -17,34 +17,48 @@ class MainWindow:
         self.width = width
         self.height = height
         self.window = self.Tk()
-        self.window.title(title)                                #Подпись
-        self.window.geometry(str(width) + 'x' + str(height))    #Размер окна
+        self.window.title(title)  # Подпись
+        self.window.geometry(str(width) + 'x' + str(height))  # Размер окна
         self.signature_font = ("Comic Sans MS", 10, "bold")
         self.settingsNN = []
         self.analyzer = self.iv.InformationAnalyzer()
 
     def start_form(self):
-        self.arrange_controls()     # Панели, кнопки, поля для ввода
-        self.set_default_settings()    #
+        self.arrange_controls()  # Панели, кнопки, поля для ввода
+        self.set_default_settings()  #
         self.redraw_canvas()
         self.window.mainloop()
 
+    # Перерисовать график полностью, если изменился размер холста
     def redraw_canvas(self):
         canv_height = self.canvas.winfo_height()
-        self.analyzer.set_img_height(canv_height)
+        # Только если мы не рисуем и высота поменялась
+        if (self.analyzer.get_drawing_process() == False) and (self.analyzer.get_canvas_height() != canv_height):
+            self.analyzer.set_img_height(canv_height)
+            image = self.analyzer.get_rendered_information(-1)
+            self.canvas.create_image(5, 5, anchor=self.NW, image=image)
+            self.canvas['scrollregion'] = (0, 0, self.analyzer.get_scrollregion_width(), 0)
+            self.canvas.image = image
 
-        image = self.analyzer.get_rendered_information()
+    def redraw_histogram(self, indexNN):
+        if self.analyzer.get_drawing_process() == False:
+            image = self.analyzer.get_rendered_information(indexNN)
 
-        self.canvas.create_image(5, 5, anchor=self.NW, image=image)
+            self.canvas.create_image(5, 5, anchor=self.NW, image=image)
+            self.canvas.image = image
 
-        self.canvas['scrollregion'] = (0, 0, self.analyzer.get_scrollregion_width(), 0)
-        self.canvas.image = image
+    # Функция при закрытии окна, нужно закрывать потоки.
+    def on_closing(self):
+        print("Закрываем всё что есть")
+        self.window.destroy()
 
     # Все поля, кнопки, метки, разметка и т.д.
     def arrange_controls(self):
         self.arr_info_label = []
         self.buttons_run_trainingNN = []
         self.buttons_stop_trainingNN = []
+        self.window.bind('<Configure>', lambda event: self.threading.Thread(target=self.redraw_canvas).start())
+        self.window.protocol("WM_DELETE_WINDOW", lambda: self.on_closing())
 
         self.f_top = self.LabelFrame(self.window, text="Здесь будет рисоваться график", font=self.signature_font)
         self.canvas = self.Canvas(self.f_top, width=600, height=200, bg='white', scrollregion=(0, 0, 1500, 0))
@@ -100,22 +114,24 @@ class MainWindow:
         f_bot_2 = self.LabelFrame(self.window, text="Панель управления", font=self.signature_font)
 
         self.buttons_run_trainingNN.append(self.Button(f_bot_2, text="Запустить обучение 1-ой НС", state='disabled',
-             command=lambda: self.threading.Thread(target=lambda: self.run_training(0)).start()))
+                                                       command=lambda: self.threading.Thread(
+                                                           target=lambda: self.run_training(0)).start()))
         self.buttons_run_trainingNN[-1].place(relwidth=0.70, relheight=0.09, relx=0.01, rely=0.01)
 
         self.buttons_stop_trainingNN.append(self.Button(f_bot_2, text="Стоп", state='disabled',
-                    command=lambda: self.stop_training(0)))
+                                                        command=lambda: self.stop_training(0)))
         self.buttons_stop_trainingNN[-1].place(relwidth=0.27, relheight=0.09, relx=0.72, rely=0.01)
 
         self.arr_info_label.append(self.Label(f_bot_2, text="0 циклов обучения"))
         self.arr_info_label[-1].place(relwidth=0.98, relheight=0.09, relx=0.01, rely=0.11)
 
         self.buttons_run_trainingNN.append(self.Button(f_bot_2, text="Запустить обучение 2-ой НС", state='disabled',
-                    command=lambda: self.threading.Thread(target=lambda: self.run_training(1)).start()))
+                                                       command=lambda: self.threading.Thread(
+                                                           target=lambda: self.run_training(1)).start()))
         self.buttons_run_trainingNN[-1].place(relwidth=0.70, relheight=0.09, relx=0.01, rely=0.21)
 
         self.buttons_stop_trainingNN.append(self.Button(f_bot_2, text="Стоп", state='disabled',
-                    command=lambda: self.stop_training(1)))
+                                                        command=lambda: self.stop_training(1)))
         self.buttons_stop_trainingNN[-1].place(relwidth=0.27, relheight=0.09, relx=0.72, rely=0.21)
 
         self.arr_info_label.append(self.Label(f_bot_2, text="0 циклов обучения"))
@@ -129,7 +145,6 @@ class MainWindow:
 
         self.entry_training_cycles = self.Entry(f_bot_2, bg="white")
         self.entry_training_cycles.place(relwidth=0.48, relheight=0.09, relx=0.51, rely=0.51)
-
 
         self.Button(f_bot_2, text="Проанализировать результаты", state='disabled',
                     command=self.open_data_file).place(relwidth=0.98, relheight=0.09, relx=0.01, rely=0.61)
@@ -169,22 +184,26 @@ class MainWindow:
         end_training_cycles = training_cycles + self.settingsNN[indexNN].get_training_cycle()
         self.entry_NNstruct.get()
 
-        self.text.insert(1.0, "Начали обучение НС №" + str(indexNN+1) + " \n")  # Добавление текста
+        self.text.insert(1.0, "Начали обучение НС №" + str(indexNN + 1) + " \n")  # Добавление текста
         self.settingsNN[indexNN].run_training()
 
         self.buttons_stop_trainingNN[indexNN]['state'] = 'normal'
         self.buttons_run_trainingNN[indexNN]['state'] = 'disabled'
 
-        while self.settingsNN[indexNN].get_is_run() and end_training_cycles > self.settingsNN[indexNN].get_training_cycle():
+        while self.settingsNN[indexNN].get_is_run() and end_training_cycles > self.settingsNN[
+            indexNN].get_training_cycle():
             self.settingsNN[indexNN].training_cycle()
             self.arr_info_label[indexNN]['text'] = str(self.settingsNN[indexNN].get_training_cycle()) + " цикл обучения"
 
             self.analyzer.update_synapses(self.settingsNN[indexNN].get_synapse_values(), indexNN)
-            self.redraw_canvas()
+
+            #self.threading.Thread(target=lambda: self.redraw_histogram(indexNN)).start()
+
+            self.redraw_histogram(indexNN)
 
             self.time.sleep(deley)
-
-        self.stop_training(indexNN)
+        if self.settingsNN[indexNN].get_is_run():
+            self.stop_training(indexNN)
 
     def stop_training(self, indexNN):
         self.settingsNN[indexNN].stop_training()
@@ -192,9 +211,9 @@ class MainWindow:
         self.buttons_run_trainingNN[indexNN]['state'] = 'normal'
         self.buttons_stop_trainingNN[indexNN]['state'] = 'disabled'
 
-        self.text.insert(1.0, "Точность НС № " + str(indexNN + 1) +" = " +
+        self.text.insert(1.0, "Точность НС № " + str(indexNN + 1) + " = " +
                          self.settingsNN[indexNN].get_accuracy_NN() + " \n")  # Добавление текста
-        self.text.insert(1.0, "Закончили обучение НС № " + str(indexNN+1) + " \n")  # Добавление текста
+        self.text.insert(1.0, "Закончили обучение НС № " + str(indexNN + 1) + " \n")  # Добавление текста
 
     # Тут задаются стартовые настройки сетей
     def set_default_settings(self):
@@ -202,9 +221,10 @@ class MainWindow:
         self.add_setting_data("16", "2", "1", "D:/Study/Python/THI/VisualizationLPNN/Data/data_1.data")
 
         self.analyzer.update_synapses(self.settingsNN[0].get_synapse_values(), 0)
+        self.analyzer.update_synapses(self.settingsNN[1].get_synapse_values(), 1)
 
         self.show_network_settings(self.combo_box.current())
-        self.text.insert(1.0, "Стартовые настройки были записаны \n")    #Добавление текста
+        self.text.insert(1.0, "Стартовые настройки были записаны \n")  # Добавление текста
 
     # При смене combo_box-а
     def change_combo_box(self, event):
@@ -217,12 +237,12 @@ class MainWindow:
         self.entry_data_set.delete(0, self.END)
         self.entry_data_set.insert(0, file_name)
 
-    # Нужно смена параметров
+    # Нужна смена параметров
     def save_configuration(self):
         data_Setting, log_validation = self.ds.data_validation(self.entry_NNstruct.get(),
-                                       self.entry_NNseed.get(),
-                                       self.entry_zero_connection_seed.get(),
-                                       self.entry_data_set.get())
+                                                               self.entry_NNseed.get(),
+                                                               self.entry_zero_connection_seed.get(),
+                                                               self.entry_data_set.get())
 
         if log_validation != "":
             self.mb.showerror("Ошибка сохранения", log_validation)
@@ -231,15 +251,17 @@ class MainWindow:
                                                                        "обучения НС. Применить новые настройки?")
             if answer:
                 self.settingsNN[self.combo_box.current()] = self.ds.DataSetting(data_Setting)
-                self.text.insert(1.0, "Новые параметры применены к НС №" + str(self.combo_box.current()+1) + " \n")  #
+                self.analyzer.update_synapses(self.settingsNN[self.combo_box.current()].get_synapse_values(), self.combo_box.current())
+                self.redraw_histogram(self.combo_box.current())
+                self.text.insert(1.0, "Новые параметры применены к НС №" + str(self.combo_box.current() + 1) + " \n")  #
 
     # Эта функция сохраняет стартовые настройки.
     # В последствии они будут меняться на новые через поля ввода другой функцией
     def add_setting_data(self, NNstruct, NNseed, zero_connection_seed, way_data_set):
         data_Setting, log_validation = self.ds.data_validation(NNstruct,
-                                       NNseed,
-                                       zero_connection_seed,
-                                       way_data_set)
+                                                               NNseed,
+                                                               zero_connection_seed,
+                                                               way_data_set)
 
         if log_validation != "":
             self.mb.showerror("Ошибка сохранения", log_validation)
