@@ -261,11 +261,11 @@ class MainWindow:
         self.show_network_settings(self.combo_box.current())
         self.text.insert(1.0, "Стартовые настройки были записаны \n")  # Добавление текста
 
-    # При смене combo_box-а с настройками ИНС
+    # При смене combo_box-ов с выбором нейронов
     def change_combo_box_selection_neuron(self, index):
-        self.analyzer.set_imaged_neuron(self.combo_boxs_drawing_NN[index].current(), index)
+        lon = self.analyzer.set_imaged_neuron(self.combo_boxs_drawing_NN[index].current(), index)
         self.redraw_histogram(index)
-        self.text.insert(1.0, "Поменяли отображаемый нейрон ИНС № " + str(index+1) + " на " + str(self.combo_boxs_drawing_NN[index].current()) + " \n")  #
+        self.text.insert(1.0, lon)
 
     # При смене combo_box-а с настройками ИНС
     def change_combo_box(self, event):
