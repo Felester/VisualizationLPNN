@@ -57,6 +57,8 @@ class MainWindow:
         self.arr_info_label = []
         self.buttons_run_trainingNN = []
         self.buttons_stop_trainingNN = []
+        self.combo_boxs_drawing_NN = []
+
         self.window.bind('<Configure>', lambda event: self.threading.Thread(target=self.redraw_canvas).start())
         self.window.protocol("WM_DELETE_WINDOW", lambda: self.on_closing())
 
@@ -146,12 +148,26 @@ class MainWindow:
         self.entry_training_cycles = self.Entry(f_bot_2, bg="white")
         self.entry_training_cycles.place(relwidth=0.48, relheight=0.09, relx=0.51, rely=0.51)
 
+        self.Label(f_bot_2, text="Какие нейроны рисовать?").place(relwidth=0.98, relheight=0.09, relx=0.01, rely=0.61)
+        #lambda event: self.threading.Thread(target=self.redraw_canvas).start()
+        self.combo_boxs_drawing_NN.append(self.Combobox(f_bot_2))
+        self.combo_boxs_drawing_NN[-1]
+        self.combo_boxs_drawing_NN[-1]['values'] = ("0 нейрон", "1 нейрон")
+        self.combo_boxs_drawing_NN[-1].current(0)  # вариант по умолчанию
+        self.combo_boxs_drawing_NN[-1].bind("<<ComboboxSelected>>", lambda event: self.change_combo_box_selection_neuron(0))
+        self.combo_boxs_drawing_NN[-1].place(relwidth=0.48, relheight=0.09, relx=0.01, rely=0.71)
+
+        self.combo_boxs_drawing_NN.append(self.Combobox(f_bot_2))
+        self.combo_boxs_drawing_NN[-1]['values'] = ("0 нейрон", "1 нейрон")
+        self.combo_boxs_drawing_NN[-1].current(0)  # вариант по умолчанию
+        self.combo_boxs_drawing_NN[-1].bind("<<ComboboxSelected>>", lambda event: self.change_combo_box_selection_neuron(1))
+        self.combo_boxs_drawing_NN[-1].place(relwidth=0.48, relheight=0.09, relx=0.51, rely=0.71)
+
         self.Button(f_bot_2, text="Проанализировать результаты", state='disabled',
-                    command=self.open_data_file).place(relwidth=0.98, relheight=0.09, relx=0.01, rely=0.61)
+                    command=self.open_data_file).place(relwidth=0.98, relheight=0.09, relx=0.01, rely=0.80)
 
         self.Button(f_bot_2, text="Сохранить изображение", state='disabled',
-                    command=self.open_data_file).place(relwidth=0.98, relheight=0.09, relx=0.01, rely=0.71)
-
+                    command=self.open_data_file).place(relwidth=0.98, relheight=0.09, relx=0.01, rely=0.90)
         # Конец панели управленияы
         f_bot_2.place(relwidth=0.38, relheight=0.39, relx=0.32, rely=0.6)
 
@@ -205,6 +221,19 @@ class MainWindow:
         if self.settingsNN[indexNN].get_is_run():
             self.stop_training(indexNN)
 
+    # Заполняем комбобоксы на основе размера сетей
+    def fill_selection_neuron(self, indexNN):
+        number = self.settingsNN[indexNN].get_number_of_network_neurons()
+        valuesCombobox = []
+        for i in range(number):
+            valuesCombobox.append("Нейрон " + str(i))
+        if number > 1:
+            valuesCombobox.append("Все нейроны")
+
+        valuesCombobox.append("Не рисовать")
+        self.combo_boxs_drawing_NN[indexNN]["values"] = valuesCombobox
+
+
     def stop_training(self, indexNN):
         self.settingsNN[indexNN].stop_training()
 
@@ -223,10 +252,22 @@ class MainWindow:
         self.analyzer.update_synapses(self.settingsNN[0].get_synapse_values(), 0)
         self.analyzer.update_synapses(self.settingsNN[1].get_synapse_values(), 1)
 
+        # Комбобоксы и активация кнопок
+        self.fill_selection_neuron(0)
+        self.fill_selection_neuron(1)
+        self.buttons_run_trainingNN[0]['state'] = 'normal'
+        self.buttons_run_trainingNN[1]['state'] = 'normal'
+
         self.show_network_settings(self.combo_box.current())
         self.text.insert(1.0, "Стартовые настройки были записаны \n")  # Добавление текста
 
-    # При смене combo_box-а
+    # При смене combo_box-а с настройками ИНС
+    def change_combo_box_selection_neuron(self, index):
+        self.analyzer.set_imaged_neuron(self.combo_boxs_drawing_NN[index].current(), index)
+        self.redraw_histogram(index)
+        self.text.insert(1.0, "Поменяли отображаемый нейрон ИНС № " + str(index+1) + " на " + str(self.combo_boxs_drawing_NN[index].current()) + " \n")  #
+
+    # При смене combo_box-а с настройками ИНС
     def change_combo_box(self, event):
         self.show_network_settings(self.combo_box.current())
 
@@ -269,8 +310,6 @@ class MainWindow:
             self.settingsNN.append(self.ds.DataSetting(data_Setting))
 
             self.text.insert(1.0, "Создана НС №" + str(len(self.settingsNN)) + " \n")  #
-            self.buttons_run_trainingNN[0]['state'] = 'normal'
-            self.buttons_run_trainingNN[1]['state'] = 'normal'
 
     def show_network_settings(self, index_combo_box):
         self.delete_show_settings()

@@ -36,6 +36,11 @@ class DataSetting:
         array_synaptic_scales = self._object_NN.get_array_synaptic_scales()
         return array_synaptic_scales[self._layer]
 
+    # Вернуть кол-во нейронов в сети на рассматриваемом слое
+    def get_number_of_network_neurons(self):
+        number_neurons = len(self._object_NN.get_array_synaptic_scales()[self._layer][0])
+        return number_neurons
+
     def get_accuracy_NN(self):
         prediction = self._object_NN.think(self._data_set[2])
         countAnsv = 0
