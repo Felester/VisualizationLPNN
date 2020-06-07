@@ -1,7 +1,8 @@
 
 class InformationAnalyzer:
     from PIL import Image, ImageDraw, ImageTk, ImageFont
-    color_histogram = [(0, 0, 255), (0, 255, 0)]
+    import affinity_search_engine as ASE
+    color_histogram = [(0, 0, 255), (0, 250, 0)]
 
     def __init__(self):
         self._synapse_values = [[], []]
@@ -22,6 +23,37 @@ class InformationAnalyzer:
 
         self.set_img_height(500)    # Координаты для осей на основе высоты
 
+    # Вычисляет схожесть нейронов
+    def find_similar(self):
+        cla_top_similar = self.ASE.affinity_analyzer(self._synapse_values, self._index_neuron)
+        top_similar = cla_top_similar.get_top_similar()
+
+        return self._rendered_similar(top_similar)
+
+    def _rendered_similar(self, top_similar_str):
+        self._drawing_process = True
+        histogram_shift = self.Xoffset + self.X_start_schedule[0]
+
+        font = self.ImageFont.truetype("19168.ttf", 16)
+        image = self.Image.alpha_composite(self._img_histograms[0], self.ImageBlank)
+        image = self.Image.alpha_composite(self._img_histograms[1], image)
+
+        y_shift = 0
+        draw = self.ImageDraw.Draw(image)
+
+        for j in range(len(top_similar_str)):
+            draw.text((histogram_shift, self.cur_y_2 + y_shift), top_similar_str[j], self.color_histogram[j//2], font=font)
+            y_shift += 20
+        del draw
+
+        image = self.ImageTk.PhotoImage(image)
+        self._drawing_process = False
+        return image
+
+
+
+
+    # Смена индекса нейрона, который будет визуализирован
     def set_imaged_neuron(self, index_neuron, index_network):
         self._index_neuron[index_network] = index_neuron
         self._get_rendered_histogram(index_network)
@@ -146,10 +178,6 @@ class InformationAnalyzer:
                       fill=(0, 0, 0), width=self._widthLine)
 
         return histogram_shift
-
-
-
-
 
     # Оси и подписи к ним
     def _draw_starting_canvas(self):

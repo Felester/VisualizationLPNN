@@ -163,8 +163,8 @@ class MainWindow:
         self.combo_boxs_drawing_NN[-1].bind("<<ComboboxSelected>>", lambda event: self.change_combo_box_selection_neuron(1))
         self.combo_boxs_drawing_NN[-1].place(relwidth=0.48, relheight=0.09, relx=0.51, rely=0.71)
 
-        self.Button(f_bot_2, text="Проанализировать результаты", state='disabled',
-                    command=self.open_data_file).place(relwidth=0.98, relheight=0.09, relx=0.01, rely=0.80)
+        self.Button(f_bot_2, text="Проанализировать результаты",
+                    command=self.analyze_results).place(relwidth=0.98, relheight=0.09, relx=0.01, rely=0.80)
 
         self.Button(f_bot_2, text="Сохранить изображение", state='disabled',
                     command=self.open_data_file).place(relwidth=0.98, relheight=0.09, relx=0.01, rely=0.90)
@@ -181,6 +181,14 @@ class MainWindow:
         f_bot_3.place(relwidth=0.28, relheight=0.38, relx=0.71, rely=0.6)
 
         self.text.insert(1.0, "Интерфейс отрисован.\n")  # Добавление текста
+
+    def analyze_results(self):
+        if self.analyzer.get_drawing_process() == False:
+            image = self.analyzer.find_similar()
+
+            self.canvas.create_image(5, 5, anchor=self.NW, image=image)
+            self.canvas.image = image
+
 
     # Данный метод открывается в отдельном потоке для обучения НС.
     def run_training(self, indexNN):
