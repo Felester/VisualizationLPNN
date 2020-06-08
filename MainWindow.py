@@ -183,6 +183,8 @@ class MainWindow:
         self.text.insert(1.0, "Интерфейс отрисован.\n")  # Добавление текста
 
     def analyze_results(self):
+        self.analyzer.find_similar()
+
         if self.analyzer.get_drawing_process() == False:
             image = self.analyzer.find_similar()
 
