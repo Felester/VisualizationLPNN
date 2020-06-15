@@ -1,6 +1,5 @@
 import numpy as np
 
-
 class NeuralNetwork:
     def __init__(self, seedRandom, NetworkStructure, zeroСonnection):
         # Чтобы контролировать рандом
@@ -48,7 +47,7 @@ class NeuralNetwork:
             arrError[-1] = outputData - FeedForwardThroughLayers[-1]
             arr_l_delta[-1] = arrError[-1] * self._nonlin(FeedForwardThroughLayers[-1],deriv=True) * learningSpeed
 
-            if (iter% 500) == 0:
+            if (iter % 500) == 0:
                 print("Error in " + str(iter) + ' iter :' + str(np.mean(np.abs(arrError[-1]))))
                 #learningSpeed = learningSpeed - changeLearningSpeed
 

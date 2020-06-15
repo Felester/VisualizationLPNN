@@ -1,8 +1,8 @@
 
 class Drawer:
     from PIL import Image, ImageDraw, ImageTk, ImageFont
-    color_histogram = [(0, 0, 255), (0, 250, 0)]
-    font = ImageFont.truetype("19168.ttf", 16)
+    _color_histogram = [(0, 0, 255), (0, 250, 0)]
+    _font = ImageFont.truetype("19168.ttf", 16)
     def __init__(self, height = 600, width = 800):
         self._img_histograms = [[], []]
         self._widthLine = 1
@@ -25,7 +25,7 @@ class Drawer:
 
         # Высота гистограммы в пикселях
         self._height_histogram = self._axis_height - self._cur_y_1
-        self._ImageBlank = self._draw_starting_canvas()
+        self._image_blank = self._draw_starting_canvas()
         self.update_size_image()
 
     def get_canvas_height(self):
@@ -47,7 +47,7 @@ class Drawer:
     # Вычислить ширину изображения и отрисовать заготовку(оси, подписи)
     def update_size_image(self):
         self._image_width = self.get_size_image()
-        self._ImageBlank = self._draw_starting_canvas()
+        self._image_blank = self._draw_starting_canvas()
 
     # Оси и подписи к ним
     def _draw_starting_canvas(self):
@@ -86,16 +86,16 @@ class Drawer:
     def _rendered_histogram_1_neuron(self, index_network, index_neuron, neuron_matrix, draw, histogram_shift):
         if index_network == 0:
             draw.text((histogram_shift, 10), "Сеть - " + str(index_network + 1) + ", нейрон - " + str(index_neuron),
-                      self.color_histogram[index_network], font=self.font)
+                      self._color_histogram[index_network], font=self._font)
         else:
             draw.text((histogram_shift + 150, 10), "Сеть - " + str(index_network + 1) + ", нейрон - " + str(index_neuron),
-                      self.color_histogram[index_network], font=self.font)
+                      self._color_histogram[index_network], font=self._font)
 
         for synapse in neuron_matrix:
             draw.rectangle((histogram_shift, self._axis_height,
                             histogram_shift + self._width_histogram,
                             self._axis_height - self._height_histogram * synapse),
-                           fill=self.color_histogram[index_network])
+                           fill=self._color_histogram[index_network])
             histogram_shift += self._histogram_spacing
         # Между нейронами прямая линия
         if index_network == 0:
@@ -106,7 +106,7 @@ class Drawer:
         return histogram_shift
 
     # Перерисовать гистограмму с заданным индексом сети
-    def get_rendered_histogram(self, index_network, neuron_indices_for_drawing, synapse_values):
+    def _rendered_histogram(self, index_network, neuron_indices_for_rendering, synapse_values):
         image = self.Image.new("RGBA", (self._image_width + 50, self._canvas_height), (0, 0, 0, 0))
         draw = self.ImageDraw.Draw(image)
 
@@ -116,47 +116,47 @@ class Drawer:
 
             transpose_matrix = list(map(list, zip(*synapse_values[index_network])))
 
-            if neuron_indices_for_drawing[index_network] == len(transpose_matrix):
+            if neuron_indices_for_rendering[index_network] == len(transpose_matrix):
                 for neuron in transpose_matrix:
                     histogram_shift = self._rendered_histogram_1_neuron(index_network, index_neuron,
                                                                         neuron,
                                                                         draw, histogram_shift)
                     index_neuron = index_neuron + 1
-            elif neuron_indices_for_drawing[index_network] < len(transpose_matrix):
-                histogram_shift = self._rendered_histogram_1_neuron(index_network, neuron_indices_for_drawing[index_network],
-                                                                    transpose_matrix[neuron_indices_for_drawing[index_network]],
+            elif neuron_indices_for_rendering[index_network] < len(transpose_matrix):
+                histogram_shift = self._rendered_histogram_1_neuron(index_network, neuron_indices_for_rendering[index_network],
+                                                                    transpose_matrix[neuron_indices_for_rendering[index_network]],
                                                                     draw, histogram_shift)
 
         del draw
-        if neuron_indices_for_drawing[index_network] <= len(transpose_matrix):
+        if neuron_indices_for_rendering[index_network] <= len(transpose_matrix):
             self._img_histograms[index_network] = image.copy()
 
-    # Рисование гистограмм на заготовке
+    # Вернуть отрисованное изображение(В зависимости от index_network рисует всё или что то одно)
     def get_rendered_information(self, index_network, index_neuron, synapse_values):
         if index_network >= 0:
-            self.get_rendered_histogram(index_network, index_neuron, synapse_values)
+            self._rendered_histogram(index_network, index_neuron, synapse_values)
         elif index_network == -1:
-            self.get_rendered_histogram(0, index_neuron, synapse_values)
-            self.get_rendered_histogram(1, index_neuron, synapse_values)
+            self._rendered_histogram(0, index_neuron, synapse_values)
+            self._rendered_histogram(1, index_neuron, synapse_values)
 
-        image = self.Image.alpha_composite(self._img_histograms[0], self._ImageBlank)
+        image = self.Image.alpha_composite(self._img_histograms[0], self._image_blank)
         image = self.Image.alpha_composite(self._img_histograms[1], image)
 
         image = self.ImageTk.PhotoImage(image)
         return image
 
     # Добавить к рисунку анализ схожести
-    def rendered_similar(self, top_similar_str, ):
+    def rendered_similar(self, top_similar_str):
         histogram_shift = self._X_offset + self._X_start_schedule[0]
 
-        image = self.Image.alpha_composite(self._img_histograms[0], self._ImageBlank)
+        image = self.Image.alpha_composite(self._img_histograms[0], self._image_blank)
         image = self.Image.alpha_composite(self._img_histograms[1], image)
         y_shift = 0
 
         draw = self.ImageDraw.Draw(image)
         for j in range(len(top_similar_str)):
-            draw.text((histogram_shift, self._cur_y_2 + y_shift), top_similar_str[j], self.color_histogram[j // 2],
-                      font=self.font)
+            draw.text((histogram_shift, self._cur_y_2 + y_shift), top_similar_str[j], self._color_histogram[j // 2],
+                      font=self._font)
             y_shift += 20
         del draw
 

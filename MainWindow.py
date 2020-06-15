@@ -41,9 +41,8 @@ class MainWindow:
             self.canvas.image = image
 
     def redraw_histogram(self, indexNN):
-        if self.analyzer.get_drawing_process() == False:
+        if self.analyzer.get_possibility_render(indexNN) == True:
             image = self.analyzer.get_rendered_information(indexNN)
-
             self.canvas.create_image(5, 5, anchor=self.NW, image=image)
             self.canvas.image = image
 
@@ -78,7 +77,7 @@ class MainWindow:
         self.combo_box = self.Combobox(f_bot_1)
         self.combo_box['values'] = ("Нейронная сеть №1", "Нейронная сеть №2")
         self.combo_box.current(0)  # вариант по умолчанию
-        self.combo_box.bind("<<ComboboxSelected>>", self.change_combo_box)
+        self.combo_box.bind("<<ComboboxSelected>>", self.change_combo_box_selection_network)
         self.combo_box.place(relwidth=0.98, relheight=0.09, relx=0.01, rely=0.01)
 
         self.Label(f_bot_1, text="Структура НС в формате (10 5):").place(relwidth=0.98, relheight=0.1,
@@ -191,7 +190,6 @@ class MainWindow:
             self.canvas.create_image(5, 5, anchor=self.NW, image=image)
             self.canvas.image = image
 
-
     # Данный метод открывается в отдельном потоке для обучения НС.
     def run_training(self, indexNN):
         deley = 0
@@ -243,7 +241,6 @@ class MainWindow:
         valuesCombobox.append("Не рисовать")
         self.combo_boxs_drawing_NN[indexNN]["values"] = valuesCombobox
 
-
     def stop_training(self, indexNN):
         self.settingsNN[indexNN].stop_training()
 
@@ -278,7 +275,7 @@ class MainWindow:
         self.text.insert(1.0, lon)
 
     # При смене combo_box-а с настройками ИНС
-    def change_combo_box(self, event):
+    def change_combo_box_selection_network(self, event):
         self.show_network_settings(self.combo_box.current())
 
     # Выбор файла с данными через проводник.
