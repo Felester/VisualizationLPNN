@@ -16,6 +16,10 @@ class DataSetting:
         self._completed_training_cycles = 0
 
 
+    def changeDB(self, data_setting):
+        self._way_data_set = data_setting[0]
+        self._data_set = data_setting[1]
+
     def _create_zeroСonnection(self):
         zeroСonnection = []
         if self._zero_connection_seed != 0:
@@ -113,9 +117,27 @@ def data_validation(NNstruct, NNseed, zero_connection_seed, way_data_set):
             log_validation += "Структура данных какая то неправильная. Файл повреждён или имеет неверный формат \n"
             log_validation += "Структура не записана, так как файл с данными повреждён"
     except:
-        log_validation += "Файл c данными не найден. Проверьте наличие файла по указанному пути \n"
+        log_validation += "Файл c данными не найден, или имеет неверный формат. " \
+                          "Проверьте наличие файла по указанному пути \n"
 
     return data_setting, log_validation
+
+def DB_validation(way_data_set):
+    log_validation = ""
+    data_setting = []
+    try:
+        data_set = _get_data_sets(way_data_set)
+        data_setting.append(way_data_set)
+
+        if len(data_set) == 4:
+            data_setting.append(data_set)
+        else:
+            log_validation += "Структура данных какая то неправильная. Файл повреждён или имеет неверный формат \n"
+    except:
+        log_validation += "Файл c данными не найден, или имеет неверный формат. " \
+                          "Проверьте наличие файла по указанному пути \n"
+    return log_validation, data_setting
+
 
 def _NNstruct_validation(NNstruct, data_set):
     log_validation = ""
@@ -135,3 +157,4 @@ def _get_data_sets(way):
     with open(way, 'rb') as filehandle:
         dataList = pickle.load(filehandle)
     return dataList
+

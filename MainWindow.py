@@ -106,7 +106,10 @@ class MainWindow:
         self.Button(f_bot_1, text="Выбрать", command=self.open_data_file).place(relwidth=0.35, relheight=0.09,
                                                                                 relx=0.63, rely=0.80)
 
-        self.Button(f_bot_1, text="Сохранить", command=self.save_configuration).place(relwidth=0.48, relheight=0.09,
+        self.Button(f_bot_1, text="Сменить БД", command=self.сhangeDB).place(relwidth=0.48, relheight=0.09,
+                                                                                      relx=0.01, rely=0.90)
+
+        self.Button(f_bot_1, text="Сохранить ИНС", command=self.save_configuration).place(relwidth=0.48, relheight=0.09,
                                                                                       relx=0.51, rely=0.90)
         # Конец окна конфигурации НС
         f_bot_1.place(relwidth=0.30, relheight=0.39, relx=0.01, rely=0.6)
@@ -189,6 +192,15 @@ class MainWindow:
 
             self.canvas.create_image(5, 5, anchor=self.NW, image=image)
             self.canvas.image = image
+
+    def сhangeDB(self):
+        log_validation, data_setting = self.ds.DB_validation(self.entry_data_set.get())
+
+        if log_validation != "":
+            self.mb.showerror("Ошибка сохранения", log_validation)
+        else:
+            self.settingsNN[self.combo_box.current()].changeDB(data_setting)
+            self.text.insert(1.0, "БД была изменена у ИНС №" + str(self.combo_box.current() + 1) + " \n")  #
 
     # Данный метод открывается в отдельном потоке для обучения НС.
     def run_training(self, indexNN):

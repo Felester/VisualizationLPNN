@@ -35,7 +35,37 @@ def test_nn():
     print(countAnsv * 100/len(dataList[3]))
 
 
+from tkinter import *
+def test_canvos_scrol():
+    import information_visualizer as iv
+    root = Tk()
+    frame = LabelFrame(root, text="Конфигурация НС", font=("Comic Sans MS", 10, "bold"))
+    frame.place(relwidth=0.98, relheight=0.6, relx=0.01)
+    canvas = Canvas(frame, bg='#FFFFFF', width=300, height=300, scrollregion=(0, 0, 1500, 500))
+    hbar = Scrollbar(frame, orient=HORIZONTAL)
+    hbar.pack(side=BOTTOM, fill=X)
+    hbar.config(command=canvas.xview)
+    canvas.config(width=300, height=300)
+    canvas.config(xscrollcommand=hbar.set)
+    canvas.pack(side=LEFT, expand=True, fill=BOTH)
+
+    test_iv = iv.InformationAnalyzer()
+
+    image = test_iv.get_rendered_information(400, 800)
+
+    canvas.create_image(25, 25, anchor=NW, image=image)
+    canvas.image = image
+
+
+    root.mainloop()
+
 if __name__ == "__main__":
     #test_nn()
     mainWin = MainWindow.MainWindow(800, 600, "Визуализатор связей нейронных сетей в процессе обучения")
     mainWin.start_form()
+    #test_canvos_scrol()
+
+
+
+
+
