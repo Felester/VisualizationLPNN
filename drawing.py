@@ -15,6 +15,13 @@ class Drawer:
 
         self.set_img_height(height)             # Координаты для осей на основе высоты
 
+
+    def save(self, str_name = "no_name_img"):
+        image = self.Image.alpha_composite(self._img_histograms[0], self._image_blank)
+        image = self.Image.alpha_composite(self._img_histograms[1], image)
+        print("Начали сохранять")
+        image.save('images/' + str_name + '.png')
+
     # Поменять/задать координаты для диапазона гистограмм
     def set_img_height(self, height):
         # График строится в этом промежутке

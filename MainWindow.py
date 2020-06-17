@@ -153,7 +153,6 @@ class MainWindow:
         self.Label(f_bot_2, text="Какие нейроны рисовать?").place(relwidth=0.98, relheight=0.09, relx=0.01, rely=0.61)
         #lambda event: self.threading.Thread(target=self.redraw_canvas).start()
         self.combo_boxs_drawing_NN.append(self.Combobox(f_bot_2))
-        self.combo_boxs_drawing_NN[-1]
         self.combo_boxs_drawing_NN[-1]['values'] = ("0 нейрон", "1 нейрон")
         self.combo_boxs_drawing_NN[-1].current(0)  # вариант по умолчанию
         self.combo_boxs_drawing_NN[-1].bind("<<ComboboxSelected>>", lambda event: self.change_combo_box_selection_neuron(0))
@@ -168,8 +167,8 @@ class MainWindow:
         self.Button(f_bot_2, text="Проанализировать результаты",
                     command=self.analyze_results).place(relwidth=0.98, relheight=0.09, relx=0.01, rely=0.80)
 
-        self.Button(f_bot_2, text="Сохранить изображение", state='disabled',
-                    command=self.open_data_file).place(relwidth=0.98, relheight=0.09, relx=0.01, rely=0.90)
+        self.Button(f_bot_2, text="Сохранить изображение",
+                    command=self.save_image).place(relwidth=0.98, relheight=0.09, relx=0.01, rely=0.90)
         # Конец панели управленияы
         f_bot_2.place(relwidth=0.38, relheight=0.39, relx=0.32, rely=0.6)
 
@@ -201,6 +200,10 @@ class MainWindow:
         else:
             self.settingsNN[self.combo_box.current()].changeDB(data_setting)
             self.text.insert(1.0, "БД была изменена у ИНС №" + str(self.combo_box.current() + 1) + " \n")  #
+
+    def save_image(self):
+        img_name = str(self.settingsNN[0].get_training_cycle()) + '_' + str(self.settingsNN[1].get_training_cycle())
+        self.analyzer.save_result_in_img(img_name)
 
     # Данный метод открывается в отдельном потоке для обучения НС.
     def run_training(self, indexNN):

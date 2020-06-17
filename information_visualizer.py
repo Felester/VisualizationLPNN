@@ -18,6 +18,9 @@ class InformationAnalyzer:
         top_similar = self._top_affinity.recount_affinity(self._synapse_values, self._neuron_indices_for_rendering)
         return self._rendered_similar(top_similar)
 
+    def save_result_in_img(self, img_name):
+        self._drawer.save(img_name)
+
     # Добавить к рисунку анализ схожести
     def _rendered_similar(self, top_similar_str):
         image = self._drawer.rendered_similar(top_similar_str)
