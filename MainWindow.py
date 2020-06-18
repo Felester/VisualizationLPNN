@@ -5,7 +5,7 @@ class MainWindow:
     from tkinter import messagebox as mb
     from tkinter import filedialog as fd
 
-    from os import path
+    from os import path, getcwdb, getcwd
     import time
 
     import dataSettingsNN as ds
@@ -268,8 +268,8 @@ class MainWindow:
 
     # Тут задаются стартовые настройки сетей
     def set_default_settings(self):
-        self.add_setting_data("10", "1", "0", "D:/Study/Python/THI/VisualizationLPNN/Data/data_1.data")
-        self.add_setting_data("16", "2", "1", "D:/Study/Python/THI/VisualizationLPNN/Data/data_1.data")
+        self.add_setting_data("10", "1", "0", self.getcwd() + "\Data\data_1.data")
+        self.add_setting_data("16", "2", "1", self.getcwd() + "\Data\data_1.data")
 
         self.analyzer.update_synapses(self.settingsNN[0].get_synapse_values(), 0)
         self.analyzer.update_synapses(self.settingsNN[1].get_synapse_values(), 1)
